@@ -38,8 +38,12 @@ func (u *TinyUrlUsecase) Add(fullUrl string) (string, error) {
 	return baseUrl + newTinyUrl, nil
 }
 
-// TODO: implement
 func (u *TinyUrlUsecase) Get(tinyUrl string) (string, error) {
+	trimmedTinyUrl := tinyUrl[len(baseUrl):]
+	fullUrl, err := u.Repository.Get(trimmedTinyUrl)
+	if err != nil {
+		return "", err
+	}
 
-	return "", nil
+	return fullUrl, nil
 }
