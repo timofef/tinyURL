@@ -1,6 +1,6 @@
 syntax="proto3";
 
-//package =
+option go_package = "github.com/timofef/tinyURL/internal/pkg/tinyURL/delivery/server/proto/server.proto";
 
 message FullUrl {
   string val = 1;
