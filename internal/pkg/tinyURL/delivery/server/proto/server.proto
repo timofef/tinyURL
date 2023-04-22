@@ -10,7 +10,7 @@ message TinyUrl {
   string val = 1;
 }
 
-service TinyUrlServer{
+service TinyUrlService{
   rpc Add(FullUrl) returns (TinyUrl) {}
   rpc Get(TinyUrl) returns (FullUrl) {}
 }

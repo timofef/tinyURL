@@ -21,3 +21,52 @@
 
 >— Реализованный функционал покрыт Unit-тестами.
 
+## Запуск
+
+### В контейнере
+
+С PostgreSQL:
+
+```
+todo
+```
+
+In-memory:
+```
+todo
+```
+
+### Локально
+
+С PostgreSQL:
+
+```
+todo
+```
+
+In-memory:
+```
+todo
+```
+
+## Генерация файлов
+
+### Через Makefile
+Mock:
+```
+```
+
+gRPC:
+```
+make grpc
+```
+
+### Вручную
+Mock:
+```
+```
+
+gRPC:
+```
+protoc --go_out=internal/pkg/tinyURL/delivery/server --go_opt=paths=source_relative --go-grpc_out=internal/pkg/tinyUrl/delivery/server --go-grpc_opt=paths=source_relative internal/pkg/tinyURL/delivery/server/proto/server.proto --proto_path=internal/pkg/tinyURL/delivery/server/proto
+```

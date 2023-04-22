@@ -1,4 +1,4 @@
-package usecase
+package utils
 
 import (
 	"math/rand"
