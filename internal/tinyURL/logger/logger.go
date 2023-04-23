@@ -4,21 +4,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var MainLogger *Logger
+var MainLogger *logrus.Entry
 
-type LoggerInterface interface {
-	LogInfo(data interface{})
-	LogError(data interface{})
-}
-
-type Logger struct {
-	Logger *logrus.Entry
-}
-
-func (l *Logger) LogInfo(data interface{}) {
-	l.Logger.Info(data)
-}
-
-func (l *Logger) LogError(data interface{}) {
-	l.Logger.Error(data)
+func init() {
+	MainLogger = logrus.NewEntry(logrus.StandardLogger())
+	MainLogger.Logger.SetFormatter(&logrus.TextFormatter{ForceColors: true})
 }

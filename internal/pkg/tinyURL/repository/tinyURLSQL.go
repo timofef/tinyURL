@@ -21,9 +21,9 @@ func InitPostgres(dbUrl string) (*sql.DB, error) {
 
 	wait := 10
 	for i := 0; i < wait; i++ {
-		logger.MainLogger.LogInfo("Pinging database...")
+		logger.MainLogger.Info("Pinging database...")
 		if err = db.Ping(); err == nil {
-			logger.MainLogger.LogInfo("Success")
+			logger.MainLogger.Info("Success")
 			break
 		}
 		time.Sleep(1 * time.Second)

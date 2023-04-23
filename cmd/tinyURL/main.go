@@ -19,17 +19,13 @@ import (
 	"time"
 )
 
-type ServerInterceptor struct {
-	Logger *logger.Logger
-}
-
-func (s *ServerInterceptor) logger(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+func interceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 	start := time.Now()
 	//md, _ := metadata.FromIncomingContext(ctx)
 
 	reqId := rand.Uint64()
 
-	s.Logger.Logger = s.Logger.Logger.WithFields(logrus.Fields{
+	logger.MainLogger = logger.MainLogger.WithFields(logrus.Fields{
 		"requestId": reqId,
 		"method":    info.FullMethod,
 		//"context":   md,
@@ -39,42 +35,38 @@ func (s *ServerInterceptor) logger(ctx context.Context, req interface{}, info *g
 		"execution_time": time.Since(start),
 	})
 
-	s.Logger.LogInfo("Entry Point")
+	logger.MainLogger.Info("Entry Point")
 
 	reply, err := handler(ctx, req)
 
-	s.Logger.LogInfo("USER Interceptor")
+	logger.MainLogger.Info("USER Interceptor")
 
 	return reply, err
 }
 
 func main() {
-	// Init logger
-	logger.MainLogger = &logger.Logger{Logger: logrus.NewEntry(logrus.StandardLogger())}
-	logger.MainLogger.Logger.Logger.SetFormatter(&logrus.TextFormatter{ForceColors: true})
-
 	// Parse storage option flag
 	useInMemoryStorage := flag.Bool("in-memory", false, "use in-memory storage")
 	flag.Parse()
 
 	// Init repository
-	var tinyUrlRepository repository.IRepository
+	var tinyUrlRepository usecase.IRepository
 	if *useInMemoryStorage {
 		tinyUrlRepository = &repository.TinyUrlInMemRepository{
 			Mux: sync.RWMutex{},
 			DB:  make(map[string]string),
 		}
-		logger.MainLogger.LogInfo("Using in-memory storage")
+		logger.MainLogger.Info("Using in-memory storage")
 	} else {
 		db, err := repository.InitPostgres(os.Getenv("DB"))
 		if err != nil {
-			logger.MainLogger.LogError("Can't connect to database: " + err.Error())
+			logger.MainLogger.Error("Can't connect to database: " + err.Error())
 			return
 		}
 		tinyUrlRepository = &repository.TinyUrlSqlRepository{
 			DB: db,
 		}
-		logger.MainLogger.LogInfo("Using PostgreSQL storage")
+		logger.MainLogger.Info("Using PostgreSQL storage")
 	}
 
 	// Init tinyUrlUsecase
@@ -82,7 +74,7 @@ func main() {
 	if val := os.Getenv("BASE_URL"); val != "" {
 		baseUrl = val
 	}
-	logger.MainLogger.LogInfo("Base URL: " + baseUrl)
+	logger.MainLogger.Info("Base URL: " + baseUrl)
 	tinyUrlUsecase := usecase.TinyUrlUsecase{
 		BaseUrl:         baseUrl,
 		Repository:      tinyUrlRepository,
@@ -99,12 +91,11 @@ func main() {
 	if err != nil {
 		grpclog.Fatal("Failed to listen: " + err.Error())
 	}
-	ServerInterceptor := ServerInterceptor{logger.MainLogger}
-	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(ServerInterceptor.logger))
+	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(interceptor))
 	server_proto.RegisterTinyUrlServiceServer(grpcServer, &tinyUrlHandler)
 
 	// Serve
-	logger.MainLogger.LogInfo("Started server on localhost:5555")
+	logger.MainLogger.Info("Started server on localhost:5555")
 	err = grpcServer.Serve(listen)
 	if err != nil {
 		grpclog.Fatalf("Server fail: %v", err)

@@ -1,12 +1,15 @@
 package usecase
 
-import (
-	"github.com/timofef/tinyURL/internal/pkg/tinyURL/repository"
-)
+type IRepository interface {
+	Add(fullUrl, tinyUrl string) error
+	Get(tinyUrl string) (string, error)
+	CheckIfFullUrlExists(fullUrl string) (string, error)
+	CheckIfTinyUrlExists(tinyUrl string) (bool, error)
+}
 
 type TinyUrlUsecase struct {
 	BaseUrl         string
-	Repository      repository.IRepository
+	Repository      IRepository
 	GenerateTinyUrl func() string
 }
 
