@@ -1,6 +1,8 @@
 package usecase
 
-import "github.com/timofef/tinyURL/internal/pkg/tinyURL/repository"
+import (
+	"github.com/timofef/tinyURL/internal/pkg/tinyURL/repository"
+)
 
 type TinyUrlUsecase struct {
 	BaseUrl         string
@@ -38,6 +40,7 @@ func (u *TinyUrlUsecase) Add(fullUrl string) (string, error) {
 }
 
 func (u *TinyUrlUsecase) Get(tinyUrl string) (string, error) {
+	// Trim base part
 	trimmedTinyUrl := tinyUrl[len(u.BaseUrl):]
 	fullUrl, err := u.Repository.Get(trimmedTinyUrl)
 	if err != nil {

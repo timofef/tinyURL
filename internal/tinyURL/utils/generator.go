@@ -15,7 +15,7 @@ func init() {
 func GenerateString() string {
 	randomString := make([]rune, strLen)
 	for i := 0; i < len(randomString); i++ {
-		randomString[i] = charset[rand.Intn(len(randomString))]
+		randomString[i] = charset[rand.Intn(len(charset))]
 	}
 
 	return string(randomString)

@@ -13,7 +13,7 @@ func (r *TinyUrlInMemRepository) Add(fullUrl, tinyUrl string) error {
 	r.Mux.Lock()
 	defer r.Mux.Unlock()
 
-	r.DB[fullUrl] = tinyUrl
+	r.DB[tinyUrl] = fullUrl
 
 	return nil
 }
