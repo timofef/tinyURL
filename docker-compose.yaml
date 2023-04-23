@@ -39,6 +39,7 @@ services:
     build:
       context: .
       dockerfile: cmd/tinyURL/Dockerfile
+    command: ${IN_MEM}
     depends_on:
       postgres:
         condition: service_healthy

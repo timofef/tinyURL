@@ -1,5 +1,5 @@
 compose-in-memory:
-	docker-compose up -d
+	sudo IN_MEM=-in-memory docker compose up -d --no-deps tinyurl
 
 compose-postgres:
-	docker-compose up -d
+	sudo docker compose up -d
