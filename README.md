@@ -50,5 +50,5 @@ protoc --go_out=internal/pkg/tinyURL/delivery/server --go_opt=paths=source_relat
 ```
 Миграции:
 ```
-migrate create -ext sql -dir internal/tinyURL/postgres/migrations/ -seq init_schema
+migrate create -ext sql -dir migrations/ -seq init_schema
 ```

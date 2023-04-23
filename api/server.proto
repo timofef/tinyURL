@@ -2,15 +2,15 @@ syntax="proto3";
 
 option go_package = "github.com/timofef/tinyURL/internal/pkg/tinyURL/delivery/server/proto/server.proto";
 
+service TinyUrlService{
+  rpc Add(FullUrl) returns (TinyUrl) {}
+  rpc Get(TinyUrl) returns (FullUrl) {}
+}
+
 message FullUrl {
   string val = 1;
 }
 
 message TinyUrl {
   string val = 1;
-}
-
-service TinyUrlService{
-  rpc Add(FullUrl) returns (TinyUrl) {}
-  rpc Get(TinyUrl) returns (FullUrl) {}
 }

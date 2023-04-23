@@ -18,31 +18,40 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    profiles: ["sql"]
 
   migrations:
     image: migrate/migrate:4
     container_name: migrations
     volumes:
-      - ./internal/tinyURL/migrations:/migrations
+      - ./migrations:/migrations
     command: [ "-path", "/migrations", "-database",  "postgres://postgres:password@postgres:5432/tinyurl?sslmode=disable", "up"]
     depends_on:
       postgres:
         condition: service_healthy
+    profiles: ["sql"]
 
-  tinyurl:
-    container_name: tinyurl
-    environment:
+  tinyurl_sql:
+    container_name: tinyurl_sql
+    environment: &enviroment
       DB: "postgres://postgres:pass@postgres:5432/tinyurl?sslmode=disable"
       BASE_URL: "http://timofei.com/"
-    ports:
+    ports: &ports
       - "5555:5555"
-    build:
+    build: &build
       context: .
       dockerfile: cmd/tinyURL/Dockerfile
-    command: ${IN_MEM}
     depends_on:
       postgres:
         condition: service_healthy
       migrations:
         condition: service_completed_successfully
+    profiles: ["sql"]
 
+  tinyurl_in_memory:
+    container_name: tinyurl_in_memory
+    environment: *enviroment
+    ports: *ports
+    build: *build
+    command: -in-memory
+    profiles: ["in_memory"]
