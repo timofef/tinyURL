@@ -12,3 +12,8 @@ grpc:
 
 migrate:
 	migrate create -ext sql -dir migrations/ -seq init_schema
+
+mock:
+	mockgen \
+	-source=internal/pkg/tinyURL/usecase/tinyURL.go \
+	-destination=internal/pkg/tinyURL/repository/mocks/tinyURL_mock.go

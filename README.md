@@ -22,31 +22,35 @@
 >— реализованный функционал покрыт Unit-тестами.
 
 ## Запуск приложения
-### Makefile
-PostgreSQL:
+
+### PostgreSQL:
+
 ```
-todo
+make compose-postgres
 ```
-In-memory:
+или
 ```
-todo
+sudo docker compose --profile sql up -d
 ```
-### Вручную
-PostgreSQL
+
+### In-memory:
+
 ```
-todo
+make compose-in-memory
 ```
-In-memory:
+или
 ```
-todo
+sudo docker compose --profile in_memory up -d
 ```
+
 ## Использованные команды для генерации файлов
 Mock:
 ```
+
 ```
 gRPC:
 ```
-protoc --go_out=internal/pkg/tinyURL/delivery/server --go_opt=paths=source_relative --go-grpc_out=internal/pkg/tinyUrl/delivery/server --go-grpc_opt=paths=source_relative internal/pkg/tinyURL/delivery/server/proto/server.proto --proto_path=internal/pkg/tinyURL/delivery/server/proto
+protoc --go_out=internal/pkg/tinyURL/delivery/server --go_opt=paths=source_relative --go-grpc_out=internal/pkg/tinyUrl/delivery/server --go-grpc_opt=paths=source_relative api/server.proto --proto_path=api
 ```
 Миграции:
 ```
