@@ -1,7 +1,7 @@
 compose-in-memory:
 	sudo docker compose --profile in_memory up -d
 
-compose-postgres:
+compose-sql:
 	sudo docker compose --profile sql up -d
 
 grpc:

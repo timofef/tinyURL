@@ -26,7 +26,7 @@
 ### PostgreSQL:
 
 ```
-make compose-postgres
+make compose-sql
 ```
 или
 ```
@@ -44,15 +44,27 @@ sudo docker compose --profile in_memory up -d
 ```
 
 ## Использованные команды для генерации файлов
-Mock:
+### Mock:
 ```
-
+make mock
 ```
-gRPC:
+или
+```
+mockgen -source=internal/pkg/tinyURL/usecase/tinyURL.go -destination=internal/pkg/tinyURL/repository/mocks/tinyURL_mock.go
+```
+### gRPC:
+```
+make grpc
+```
+или
 ```
 protoc --go_out=internal/pkg/tinyURL/delivery/server --go_opt=paths=source_relative --go-grpc_out=internal/pkg/tinyUrl/delivery/server --go-grpc_opt=paths=source_relative api/server.proto --proto_path=api
 ```
-Миграции:
+### Миграции:
+```
+make migrate
+```
+или
 ```
 migrate create -ext sql -dir migrations/ -seq init_schema
 ```
