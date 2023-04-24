@@ -20,7 +20,7 @@ jobs:
         
       - name: Get dependencies
         run: |
-          go get -v -t -d ./...
+          go mod tidy
     
       - name: Build
         run: go build cmd/tinyURL/main.go
