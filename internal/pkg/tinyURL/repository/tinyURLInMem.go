@@ -4,12 +4,12 @@ import (
 	"sync"
 )
 
-type TinyUrlInMemRepository struct {
+type TinyUrlInMemoryRepository struct {
 	Mux sync.RWMutex
 	DB  map[string]string
 }
 
-func (r *TinyUrlInMemRepository) Add(fullUrl, tinyUrl string) error {
+func (r *TinyUrlInMemoryRepository) Add(fullUrl, tinyUrl string) error {
 	r.Mux.Lock()
 	defer r.Mux.Unlock()
 
@@ -18,7 +18,7 @@ func (r *TinyUrlInMemRepository) Add(fullUrl, tinyUrl string) error {
 	return nil
 }
 
-func (r *TinyUrlInMemRepository) Get(tinyUrl string) (string, error) {
+func (r *TinyUrlInMemoryRepository) Get(tinyUrl string) (string, error) {
 	var val string
 	var ok bool
 
@@ -32,7 +32,7 @@ func (r *TinyUrlInMemRepository) Get(tinyUrl string) (string, error) {
 	return val, nil
 }
 
-func (r *TinyUrlInMemRepository) CheckIfFullUrlExists(fullUrl string) (string, error) {
+func (r *TinyUrlInMemoryRepository) CheckIfFullUrlExists(fullUrl string) (string, error) {
 	r.Mux.RLock()
 	defer r.Mux.RUnlock()
 
@@ -45,7 +45,7 @@ func (r *TinyUrlInMemRepository) CheckIfFullUrlExists(fullUrl string) (string, e
 	return "", nil
 }
 
-func (r *TinyUrlInMemRepository) CheckIfTinyUrlExists(tinyUrl string) (bool, error) {
+func (r *TinyUrlInMemoryRepository) CheckIfTinyUrlExists(tinyUrl string) (bool, error) {
 	r.Mux.RLock()
 	defer r.Mux.RUnlock()
 

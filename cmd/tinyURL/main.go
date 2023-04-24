@@ -5,13 +5,12 @@ import (
 	"flag"
 	"github.com/sirupsen/logrus"
 	"github.com/timofef/tinyURL/internal/pkg/tinyURL/delivery"
-	server_proto "github.com/timofef/tinyURL/internal/pkg/tinyURL/delivery/server"
+	server "github.com/timofef/tinyURL/internal/pkg/tinyURL/delivery/server"
 	"github.com/timofef/tinyURL/internal/pkg/tinyURL/repository"
 	"github.com/timofef/tinyURL/internal/pkg/tinyURL/usecase"
 	"github.com/timofef/tinyURL/internal/tinyURL/logger"
 	"github.com/timofef/tinyURL/internal/tinyURL/utils"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/grpclog"
 	"math/rand"
 	"net"
 	"os"
@@ -52,7 +51,7 @@ func main() {
 	// Init repository
 	var tinyUrlRepository usecase.IRepository
 	if *useInMemoryStorage {
-		tinyUrlRepository = &repository.TinyUrlInMemRepository{
+		tinyUrlRepository = &repository.TinyUrlInMemoryRepository{
 			Mux: sync.RWMutex{},
 			DB:  make(map[string]string),
 		}
@@ -60,8 +59,7 @@ func main() {
 	} else {
 		db, err := repository.InitPostgres(os.Getenv("DB"))
 		if err != nil {
-			logger.MainLogger.Error("Can't connect to database: " + err.Error())
-			return
+			logger.MainLogger.Fatal("Can't connect to database: " + err.Error())
 		}
 		tinyUrlRepository = &repository.TinyUrlSqlRepository{
 			DB: db,
@@ -89,15 +87,15 @@ func main() {
 	// Init server
 	listen, err := net.Listen("tcp", ":5555")
 	if err != nil {
-		grpclog.Fatal("Failed to listen: " + err.Error())
+		logger.MainLogger.Fatal("Failed to listen: " + err.Error())
 	}
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(interceptor))
-	server_proto.RegisterTinyUrlServiceServer(grpcServer, &tinyUrlHandler)
+	server.RegisterTinyUrlServiceServer(grpcServer, &tinyUrlHandler)
 
 	// Serve
 	logger.MainLogger.Info("Started server on localhost:5555")
 	err = grpcServer.Serve(listen)
 	if err != nil {
-		grpclog.Fatalf("Server fail: %v", err)
+		logger.MainLogger.Fatal("Server fail: " + err.Error())
 	}
 }

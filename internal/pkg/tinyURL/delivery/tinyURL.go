@@ -16,7 +16,6 @@ type IUsecase interface {
 }
 
 type TinyUrlHandler struct {
-	Server  server.TinyUrlServiceServer
 	Usecase IUsecase
 	server.UnimplementedTinyUrlServiceServer
 }
