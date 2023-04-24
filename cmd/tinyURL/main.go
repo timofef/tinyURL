@@ -11,6 +11,7 @@ import (
 	"github.com/timofef/tinyURL/internal/tinyURL/logger"
 	"github.com/timofef/tinyURL/internal/tinyURL/utils"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"math/rand"
 	"net"
 	"os"
@@ -20,25 +21,21 @@ import (
 
 func interceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 	start := time.Now()
-	//md, _ := metadata.FromIncomingContext(ctx)
+	md, _ := metadata.FromIncomingContext(ctx)
 
 	reqId := rand.Uint64()
 
 	logger.MainLogger = logger.MainLogger.WithFields(logrus.Fields{
-		"requestId": reqId,
-		"method":    info.FullMethod,
-		//"context":   md,
+		"requestId":      reqId,
+		"method":         info.FullMethod,
+		"context":        md,
 		"request":        req,
 		"response":       resp,
 		"error":          err,
 		"execution_time": time.Since(start),
 	})
 
-	logger.MainLogger.Info("Entry Point")
-
 	reply, err := handler(ctx, req)
-
-	logger.MainLogger.Info("USER Interceptor")
 
 	return reply, err
 }
