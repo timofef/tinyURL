@@ -5,15 +5,19 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+
 jobs:
-  test:
+  tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v3
-        with:
-          go-version: 1.20
-      - uses: actions/checkout@v3
-      - run: |
-          go test ./... -v -coverpkg=./... -coverprofile=cover.out.tmp
-          cat cover.out.tmp | grep -v "mock.go" | grep -v "pb.go" > cover.out
-          go tool cover -func=cover.out
+    - uses: actions/checkout@v2
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.18
+
+    - name: tests
+      run: |
+        go test ./... -v -coverpkg=./... -coverprofile=cover.out.tmp 
+        cat cover.out.tmp | grep -v "mock.go" | grep -v "pb.go" > cover.out
+        go tool cover -func=cover.out
