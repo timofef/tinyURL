@@ -19,3 +19,6 @@
 
 .env
 main
+
+cover.out.tmp
+cover.out

@@ -77,7 +77,7 @@ func (r *TinyUrlSqlRepository) CheckIfFullUrlExists(fullUrl string) (string, err
 }
 
 func (r *TinyUrlSqlRepository) CheckIfTinyUrlExists(tinyUrl string) (bool, error) {
-	rows, err := r.DB.Query(`SELECT tinyUrl FROM urls WHERE tinyurl = $1`, tinyUrl)
+	rows, err := r.DB.Query(`SELECT fullurl FROM urls WHERE tinyurl = $1`, tinyUrl)
 	if err != nil {
 		return false, err
 	}

@@ -50,7 +50,7 @@ make mock
 ```
 или
 ```
-mockgen -source=internal/pkg/tinyURL/usecase/tinyURL.go -destination=internal/pkg/tinyURL/repository/mocks/tinyURL_mock.go
+mockgen -source=internal/pkg/tinyURL/delivery/tinyURL.go -destination=internal/pkg/tinyURL/delivery/mocks/tinyURL_mock.go && mockgen -source=internal/pkg/tinyURL/usecase/tinyURL.go -destination=internal/pkg/tinyURL/usecase/mocks/tinyURL_mock.go
 ```
 ### gRPC:
 ```

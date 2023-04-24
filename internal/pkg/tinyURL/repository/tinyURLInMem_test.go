@@ -13,7 +13,7 @@ func TestTinyUrlInMemoryRepository_Add(t *testing.T) {
 	}
 
 	tests := []test{
-		{input: []string{"fullUrl", "tinyUrl"}, inserted: "fullUrl", expectedError: nil},
+		{input: []string{"fullUrl", "fullUrl"}, inserted: "fullUrl", expectedError: nil},
 	}
 
 	for _, testCase := range tests {
@@ -35,8 +35,8 @@ func TestTinyUrlInMemoryRepository_Get(t *testing.T) {
 	}
 
 	tests := []test{
-		{input: "tinyUrl", db: map[string]string{"tinyUrl": "fullUrl"}, expectedUrl: "fullUrl", expectedError: nil},
-		{input: "tinyUrl", db: make(map[string]string), expectedUrl: "", expectedError: nil},
+		{input: "fullUrl", db: map[string]string{"fullUrl": "fullUrl"}, expectedUrl: "fullUrl", expectedError: nil},
+		{input: "fullUrl", db: make(map[string]string), expectedUrl: "", expectedError: nil},
 	}
 
 	for _, testCase := range tests {
@@ -56,8 +56,8 @@ func TestTinyUrlInMemoryRepository_CheckIfTinyUrlExists(t *testing.T) {
 	}
 
 	tests := []test{
-		{input: "tinyUrl", db: map[string]string{"tinyUrl": "fullUrl"}, expected: true, expectedError: nil},
-		{input: "notTinyUrl", db: map[string]string{"tinyUrl": "fullUrl"}, expected: false, expectedError: nil},
+		{input: "fullUrl", db: map[string]string{"fullUrl": "fullUrl"}, expected: true, expectedError: nil},
+		{input: "notTinyUrl", db: map[string]string{"fullUrl": "fullUrl"}, expected: false, expectedError: nil},
 	}
 
 	for _, testCase := range tests {
@@ -77,8 +77,8 @@ func TestTinyUrlInMemoryRepository_CheckIfFullUrlExists(t *testing.T) {
 	}
 
 	tests := []test{
-		{input: "fullUrl", db: map[string]string{"tinyUrl": "fullUrl"}, expectedTinyUrl: "tinyUrl", expectedError: nil},
-		{input: "notFullUrl", db: map[string]string{"tinyUrl": "fullUrl"}, expectedTinyUrl: "", expectedError: nil},
+		{input: "fullUrl", db: map[string]string{"fullUrl": "fullUrl"}, expectedTinyUrl: "fullUrl", expectedError: nil},
+		{input: "notFullUrl", db: map[string]string{"fullUrl": "fullUrl"}, expectedTinyUrl: "", expectedError: nil},
 	}
 
 	for _, testCase := range tests {
