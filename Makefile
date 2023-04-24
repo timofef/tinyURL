@@ -18,4 +18,4 @@ mock:
     mockgen -source=internal/pkg/tinyURL/usecase/tinyURL.go -destination=internal/pkg/tinyURL/usecase/mocks/tinyURL_mock.go
 
 test:
-	go test ./...
+	go test ./... -v -coverpkg=./... -coverprofile=cover.out.tmp && cat cover.out.tmp | grep -v "mock.go" | grep -v "pb.go" > cover.out && go tool cover -html=cover.out

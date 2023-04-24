@@ -68,3 +68,13 @@ make migrate
 ```
 migrate create -ext sql -dir migrations/ -seq init_schema
 ```
+## Тесты
+
+Запуск тестов и генерация html-файла с покрытием:
+```
+make test
+```
+или
+```
+go test ./... -v -coverpkg=./... -coverprofile=cover.out.tmp && cat cover.out.tmp | grep -v "mock.go" | grep -v "pb.go" > cover.out && go tool cover -html=cover.out
+```
