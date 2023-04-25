@@ -16,6 +16,7 @@ func GenerateMock() string {
 func TestTinyUrlUsecase_InitTinyUrlUsecase(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	type test struct {
+		name          string
 		baseUrl       string
 		generatorFunc func() string
 		repository    func() *mock_usecase.MockIRepository
@@ -23,6 +24,7 @@ func TestTinyUrlUsecase_InitTinyUrlUsecase(t *testing.T) {
 
 	tests := []test{
 		{
+			name:          "success",
 			baseUrl:       "http://base.com/",
 			generatorFunc: GenerateMock,
 			repository: func() *mock_usecase.MockIRepository {
@@ -33,19 +35,22 @@ func TestTinyUrlUsecase_InitTinyUrlUsecase(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		mockRepo := testCase.repository()
-		got := InitTinyUrlUsecase(testCase.baseUrl, mockRepo, testCase.generatorFunc)
+		t.Run(testCase.name, func(t *testing.T) {
+			mockRepo := testCase.repository()
+			got := InitTinyUrlUsecase(testCase.baseUrl, mockRepo, testCase.generatorFunc)
 
-		assert.NotNil(t, got)
-		assert.Equal(t, testCase.baseUrl, got.baseUrl)
-		assert.Equal(t, mockRepo, got.repository) // Can't compare functions
-		assert.NotNil(t, got.generateTinyUrl)
+			assert.NotNil(t, got)
+			assert.Equal(t, testCase.baseUrl, got.baseUrl)
+			assert.Equal(t, mockRepo, got.repository) // Can't compare functions
+			assert.NotNil(t, got.generateTinyUrl)
+		})
 	}
 }
 
 func TestTinyUrlUsecase_Add(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	type test struct {
+		name            string
 		fullUrl         string
 		expectedTinyUrl string
 		expectedError   error
@@ -55,6 +60,7 @@ func TestTinyUrlUsecase_Add(t *testing.T) {
 
 	tests := []test{
 		{
+			name:            "CheckIfFullUrlExists_failed",
 			fullUrl:         "http://google.com/",
 			expectedTinyUrl: "",
 			expectedError:   errors.New("failed repository.CheckIfFullUrlExists"),
@@ -68,6 +74,7 @@ func TestTinyUrlUsecase_Add(t *testing.T) {
 			},
 		},
 		{
+			name:            "CheckIfTinyUrlExists_failed",
 			fullUrl:         "http://google.com/",
 			expectedTinyUrl: "",
 			expectedError:   errors.New("failed repository.CheckIfTinyUrlExists"),
@@ -85,6 +92,7 @@ func TestTinyUrlUsecase_Add(t *testing.T) {
 			},
 		},
 		{
+			name:            "Add_failed",
 			fullUrl:         "http://google.com/",
 			expectedTinyUrl: "",
 			expectedError:   errors.New("failed repository.Add"),
@@ -105,6 +113,7 @@ func TestTinyUrlUsecase_Add(t *testing.T) {
 			},
 		},
 		{
+			name:            "tinyurl_already_existed",
 			fullUrl:         "http://google.com/",
 			expectedTinyUrl: "http://base.com/0123456789",
 			expectedError:   nil,
@@ -118,6 +127,7 @@ func TestTinyUrlUsecase_Add(t *testing.T) {
 			},
 		},
 		{
+			name:            "successfully_created_tinyurl",
 			fullUrl:         "http://google.com/",
 			expectedTinyUrl: "http://base.com/0123456789",
 			expectedError:   nil,
@@ -140,22 +150,25 @@ func TestTinyUrlUsecase_Add(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		usecase := TinyUrlUsecase{
-			baseUrl:         testCase.baseUrl,
-			repository:      testCase.repository(),
-			generateTinyUrl: GenerateMock,
-		}
+		t.Run(testCase.name, func(t *testing.T) {
+			usecase := TinyUrlUsecase{
+				baseUrl:         testCase.baseUrl,
+				repository:      testCase.repository(),
+				generateTinyUrl: GenerateMock,
+			}
 
-		got, err := usecase.Add(testCase.fullUrl)
+			got, err := usecase.Add(testCase.fullUrl)
 
-		assert.Equal(t, testCase.expectedError, err)
-		assert.Equal(t, testCase.expectedTinyUrl, got)
+			assert.Equal(t, testCase.expectedError, err)
+			assert.Equal(t, testCase.expectedTinyUrl, got)
+		})
 	}
 }
 
 func TestTinyUrlUsecase_Get(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	type test struct {
+		name            string
 		tinyUrl         string
 		expectedFullUrl string
 		expectedError   error
@@ -165,6 +178,7 @@ func TestTinyUrlUsecase_Get(t *testing.T) {
 
 	tests := []test{
 		{
+			name:            "repository_failed",
 			tinyUrl:         "http://base.com/0123456789",
 			expectedFullUrl: "",
 			expectedError:   errors.New("failed repo"),
@@ -178,6 +192,7 @@ func TestTinyUrlUsecase_Get(t *testing.T) {
 			},
 		},
 		{
+			name:            "success",
 			tinyUrl:         "http://base.com/0123456789",
 			expectedFullUrl: "fullUrl",
 			expectedError:   nil,
@@ -193,22 +208,26 @@ func TestTinyUrlUsecase_Get(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		usecase := TinyUrlUsecase{
-			baseUrl:         testCase.baseUrl,
-			repository:      testCase.repository(),
-			generateTinyUrl: GenerateMock,
-		}
+		t.Run(testCase.name, func(t *testing.T) {
+			usecase := TinyUrlUsecase{
+				baseUrl:         testCase.baseUrl,
+				repository:      testCase.repository(),
+				generateTinyUrl: GenerateMock,
+			}
 
-		got, err := usecase.Get(testCase.tinyUrl)
+			got, err := usecase.Get(testCase.tinyUrl)
 
-		assert.Equal(t, testCase.expectedError, err)
-		assert.Equal(t, testCase.expectedFullUrl, got)
+			assert.Equal(t, testCase.expectedError, err)
+			assert.Equal(t, testCase.expectedFullUrl, got)
+		})
 	}
 }
 
 func TestTinyUrlUsecase_Generator(t *testing.T) {
-	randStr1 := utils.GenerateString()
-	randStr2 := utils.GenerateString()
+	t.Run("success", func(t *testing.T) {
+		randStr1 := utils.GenerateString()
+		randStr2 := utils.GenerateString()
 
-	assert.NotEqual(t, randStr1, randStr2)
+		assert.NotEqual(t, randStr1, randStr2)
+	})
 }

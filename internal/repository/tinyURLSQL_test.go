@@ -10,11 +10,13 @@ import (
 
 func TestTinyUrlSqlRepository_InitTinyUrlSqlRepository(t *testing.T) {
 	type test struct {
-		db func() *sql.DB
+		name string
+		db   func() *sql.DB
 	}
 
 	tests := []test{
 		{
+			name: "success",
 			db: func() *sql.DB {
 				database, _, err := sqlmock.New()
 				if err != nil {
@@ -27,16 +29,19 @@ func TestTinyUrlSqlRepository_InitTinyUrlSqlRepository(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		db := testCase.db()
-		got := InitTinyUrlSqlRepository(db)
+		t.Run(testCase.name, func(t *testing.T) {
+			db := testCase.db()
+			got := InitTinyUrlSqlRepository(db)
 
-		assert.NotNil(t, got)
-		assert.Equal(t, db, got.db)
+			assert.NotNil(t, got)
+			assert.Equal(t, db, got.db)
+		})
 	}
 }
 
 func TestTinyUrlSqlRepository_Add(t *testing.T) {
 	type test struct {
+		name          string
 		input         []string
 		expectedError error
 		db            func() *sql.DB
@@ -44,6 +49,7 @@ func TestTinyUrlSqlRepository_Add(t *testing.T) {
 
 	tests := []test{
 		{
+			name:          "sql_error",
 			input:         []string{"fullUrl", "fullUrl"},
 			expectedError: errors.New("sql error"),
 			db: func() *sql.DB {
@@ -57,6 +63,7 @@ func TestTinyUrlSqlRepository_Add(t *testing.T) {
 			},
 		},
 		{
+			name:          "success",
 			input:         []string{"fullUrl", "fullUrl"},
 			expectedError: nil,
 			db: func() *sql.DB {
@@ -72,15 +79,18 @@ func TestTinyUrlSqlRepository_Add(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlSqlRepository{db: testCase.db()}
-		err := repo.Add(testCase.input[0], testCase.input[1])
+		t.Run(testCase.name, func(t *testing.T) {
+			repo := TinyUrlSqlRepository{db: testCase.db()}
+			err := repo.Add(testCase.input[0], testCase.input[1])
 
-		assert.Equal(t, testCase.expectedError, err)
+			assert.Equal(t, testCase.expectedError, err)
+		})
 	}
 }
 
 func TestTinyUrlSqlRepository_Get(t *testing.T) {
 	type test struct {
+		name            string
 		tinyUrl         string
 		expectedFullUrl string
 		expectedError   error
@@ -89,7 +99,8 @@ func TestTinyUrlSqlRepository_Get(t *testing.T) {
 
 	tests := []test{
 		{
-			tinyUrl:         "fullUrl",
+			name:            "sql_error",
+			tinyUrl:         "tinyUrl",
 			expectedFullUrl: "",
 			expectedError:   errors.New("sql error"),
 			db: func() *sql.DB {
@@ -97,13 +108,14 @@ func TestTinyUrlSqlRepository_Get(t *testing.T) {
 				if err != nil {
 					t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 				}
-				mock.ExpectQuery("SELECT fullurl").WithArgs("fullUrl").WillReturnError(errors.New("sql error"))
+				mock.ExpectQuery("SELECT fullurl").WithArgs("tinyUrl").WillReturnError(errors.New("sql error"))
 
 				return database
 			},
 		},
 		{
-			tinyUrl:         "fullUrl",
+			name:            "success",
+			tinyUrl:         "tinyUrl",
 			expectedFullUrl: "http://google.com/",
 			expectedError:   nil,
 			db: func() *sql.DB {
@@ -112,7 +124,7 @@ func TestTinyUrlSqlRepository_Get(t *testing.T) {
 					t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 				}
 				rows := sqlmock.NewRows([]string{"fullurl"}).AddRow("http://google.com/")
-				mock.ExpectQuery("SELECT fullurl").WithArgs("fullUrl").WillReturnRows(rows)
+				mock.ExpectQuery("SELECT fullurl").WithArgs("tinyUrl").WillReturnRows(rows)
 
 				return database
 			},
@@ -120,16 +132,19 @@ func TestTinyUrlSqlRepository_Get(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlSqlRepository{db: testCase.db()}
-		got, err := repo.Get(testCase.tinyUrl)
+		t.Run(testCase.name, func(t *testing.T) {
+			repo := TinyUrlSqlRepository{db: testCase.db()}
+			got, err := repo.Get(testCase.tinyUrl)
 
-		assert.Equal(t, testCase.expectedFullUrl, got)
-		assert.Equal(t, testCase.expectedError, err)
+			assert.Equal(t, testCase.expectedFullUrl, got)
+			assert.Equal(t, testCase.expectedError, err)
+		})
 	}
 }
 
 func TestTinyUrlSqlRepository_CheckIfTinyUrlExists(t *testing.T) {
 	type test struct {
+		name          string
 		tinyUrl       string
 		expected      bool
 		expectedError error
@@ -138,6 +153,7 @@ func TestTinyUrlSqlRepository_CheckIfTinyUrlExists(t *testing.T) {
 
 	tests := []test{
 		{
+			name:          "sql_error",
 			tinyUrl:       "tinyUrl",
 			expected:      false,
 			expectedError: errors.New("sql error"),
@@ -152,6 +168,7 @@ func TestTinyUrlSqlRepository_CheckIfTinyUrlExists(t *testing.T) {
 			},
 		},
 		{
+			name:          "tinyurl_not_exist",
 			tinyUrl:       "tinyUrl",
 			expected:      false,
 			expectedError: nil,
@@ -167,6 +184,7 @@ func TestTinyUrlSqlRepository_CheckIfTinyUrlExists(t *testing.T) {
 			},
 		},
 		{
+			name:          "tinyurl_exist",
 			tinyUrl:       "tinyUrl",
 			expected:      true,
 			expectedError: nil,
@@ -184,16 +202,19 @@ func TestTinyUrlSqlRepository_CheckIfTinyUrlExists(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlSqlRepository{db: testCase.db()}
-		got, err := repo.CheckIfTinyUrlExists(testCase.tinyUrl)
+		t.Run(testCase.name, func(t *testing.T) {
+			repo := TinyUrlSqlRepository{db: testCase.db()}
+			got, err := repo.CheckIfTinyUrlExists(testCase.tinyUrl)
 
-		assert.Equal(t, testCase.expected, got)
-		assert.Equal(t, testCase.expectedError, err)
+			assert.Equal(t, testCase.expected, got)
+			assert.Equal(t, testCase.expectedError, err)
+		})
 	}
 }
 
 func TestTinyUrlSqlRepository_CheckIfFullUrlExists(t *testing.T) {
 	type test struct {
+		name          string
 		fullUrl       string
 		expected      string
 		expectedError error
@@ -202,6 +223,7 @@ func TestTinyUrlSqlRepository_CheckIfFullUrlExists(t *testing.T) {
 
 	tests := []test{
 		{
+			name:          "sql_error",
 			fullUrl:       "fullUrl",
 			expected:      "",
 			expectedError: errors.New("sql error"),
@@ -216,6 +238,7 @@ func TestTinyUrlSqlRepository_CheckIfFullUrlExists(t *testing.T) {
 			},
 		},
 		{
+			name:          "fullurl_not_exist",
 			fullUrl:       "fullUrl",
 			expected:      "",
 			expectedError: nil,
@@ -231,6 +254,7 @@ func TestTinyUrlSqlRepository_CheckIfFullUrlExists(t *testing.T) {
 			},
 		},
 		{
+			name:          "fullurl_exist",
 			fullUrl:       "fullUrl",
 			expected:      "tinyUrl",
 			expectedError: nil,
@@ -248,10 +272,12 @@ func TestTinyUrlSqlRepository_CheckIfFullUrlExists(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlSqlRepository{db: testCase.db()}
-		got, err := repo.CheckIfFullUrlExists(testCase.fullUrl)
+		t.Run(testCase.name, func(t *testing.T) {
+			repo := TinyUrlSqlRepository{db: testCase.db()}
+			got, err := repo.CheckIfFullUrlExists(testCase.fullUrl)
 
-		assert.Equal(t, testCase.expected, got)
-		assert.Equal(t, testCase.expectedError, err)
+			assert.Equal(t, testCase.expected, got)
+			assert.Equal(t, testCase.expectedError, err)
+		})
 	}
 }

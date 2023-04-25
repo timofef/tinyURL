@@ -7,48 +7,61 @@ import (
 
 func TestTinyUrlInMemoryRepository_InitTinyUrlInMemoryRepository(t *testing.T) {
 	type test struct {
+		name   string
 		mapLen int
 	}
 
 	tests := []test{
 		{
+			name:   "success",
 			mapLen: 0,
 		},
 	}
 
 	for _, testCase := range tests {
-		got := InitTinyUrlInMemoryRepository()
+		t.Run(testCase.name, func(t *testing.T) {
+			got := InitTinyUrlInMemoryRepository()
 
-		assert.NotNil(t, got)
-		assert.Equal(t, testCase.mapLen, len(got.db))
+			assert.NotNil(t, got)
+			assert.Equal(t, testCase.mapLen, len(got.db))
+		})
 	}
 }
 
 func TestTinyUrlInMemoryRepository_Add(t *testing.T) {
 	type test struct {
+		name          string
 		input         []string
 		inserted      string
 		expectedError error
 	}
 
 	tests := []test{
-		{input: []string{"fullUrl", "fullUrl"}, inserted: "fullUrl", expectedError: nil},
+		{
+			name:          "success",
+			input:         []string{"fullUrl", "fullUrl"},
+			inserted:      "fullUrl",
+			expectedError: nil,
+		},
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlInMemoryRepository{db: make(map[string]string)}
-		got := repo.Add(testCase.input[0], testCase.input[1])
+		t.Run(testCase.name, func(t *testing.T) {
+			repo := TinyUrlInMemoryRepository{db: make(map[string]string)}
+			got := repo.Add(testCase.input[0], testCase.input[1])
 
-		assert.Equal(t, testCase.expectedError, got)
+			assert.Equal(t, testCase.expectedError, got)
 
-		res := repo.db[testCase.input[1]]
+			res := repo.db[testCase.input[1]]
 
-		assert.Equal(t, testCase.inserted, res)
+			assert.Equal(t, testCase.inserted, res)
+		})
 	}
 }
 
 func TestTinyUrlInMemoryRepository_Get(t *testing.T) {
 	type test struct {
+		name          string
 		input         string
 		db            map[string]string
 		expectedUrl   string
@@ -56,21 +69,36 @@ func TestTinyUrlInMemoryRepository_Get(t *testing.T) {
 	}
 
 	tests := []test{
-		{input: "fullUrl", db: map[string]string{"fullUrl": "fullUrl"}, expectedUrl: "fullUrl", expectedError: nil},
-		{input: "fullUrl", db: make(map[string]string), expectedUrl: "", expectedError: nil},
+		{
+			name:          "tinyurl_exist",
+			input:         "tinyUrl",
+			db:            map[string]string{"tinyUrl": "fullUrl"},
+			expectedUrl:   "fullUrl",
+			expectedError: nil,
+		},
+		{
+			name:          "tinyurl_not_exist",
+			input:         "tinyUrl",
+			db:            make(map[string]string),
+			expectedUrl:   "",
+			expectedError: nil,
+		},
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlInMemoryRepository{db: testCase.db}
-		got, err := repo.Get(testCase.input)
+		t.Run(testCase.name, func(t *testing.T) {
+			repo := TinyUrlInMemoryRepository{db: testCase.db}
+			got, err := repo.Get(testCase.input)
 
-		assert.Equal(t, testCase.expectedUrl, got)
-		assert.Equal(t, testCase.expectedError, err)
+			assert.Equal(t, testCase.expectedUrl, got)
+			assert.Equal(t, testCase.expectedError, err)
+		})
 	}
 }
 
 func TestTinyUrlInMemoryRepository_CheckIfTinyUrlExists(t *testing.T) {
 	type test struct {
+		name          string
 		input         string
 		db            map[string]string
 		expected      bool
@@ -78,21 +106,36 @@ func TestTinyUrlInMemoryRepository_CheckIfTinyUrlExists(t *testing.T) {
 	}
 
 	tests := []test{
-		{input: "fullUrl", db: map[string]string{"fullUrl": "fullUrl"}, expected: true, expectedError: nil},
-		{input: "notTinyUrl", db: map[string]string{"fullUrl": "fullUrl"}, expected: false, expectedError: nil},
+		{
+			name:          "tinyurl_exist",
+			input:         "tinyUrl",
+			db:            map[string]string{"tinyUrl": "fullUrl"},
+			expected:      true,
+			expectedError: nil,
+		},
+		{
+			name:          "tinyurl_not_exist",
+			input:         "notTinyUrl",
+			db:            map[string]string{"tinyUrl": "fullUrl"},
+			expected:      false,
+			expectedError: nil,
+		},
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlInMemoryRepository{db: testCase.db}
-		got, err := repo.CheckIfTinyUrlExists(testCase.input)
+		t.Run(testCase.name, func(t *testing.T) {
+			repo := TinyUrlInMemoryRepository{db: testCase.db}
+			got, err := repo.CheckIfTinyUrlExists(testCase.input)
 
-		assert.Equal(t, testCase.expected, got)
-		assert.Equal(t, testCase.expectedError, err)
+			assert.Equal(t, testCase.expected, got)
+			assert.Equal(t, testCase.expectedError, err)
+		})
 	}
 }
 
 func TestTinyUrlInMemoryRepository_CheckIfFullUrlExists(t *testing.T) {
 	type test struct {
+		name            string
 		input           string
 		db              map[string]string
 		expectedTinyUrl string
@@ -100,15 +143,29 @@ func TestTinyUrlInMemoryRepository_CheckIfFullUrlExists(t *testing.T) {
 	}
 
 	tests := []test{
-		{input: "fullUrl", db: map[string]string{"fullUrl": "fullUrl"}, expectedTinyUrl: "fullUrl", expectedError: nil},
-		{input: "notFullUrl", db: map[string]string{"fullUrl": "fullUrl"}, expectedTinyUrl: "", expectedError: nil},
+		{
+			name:            "fullurl_exist",
+			input:           "fullUrl",
+			db:              map[string]string{"tinyUrl": "fullUrl"},
+			expectedTinyUrl: "tinyUrl",
+			expectedError:   nil,
+		},
+		{
+			name:            "fullurl_not_exist",
+			input:           "notFullUrl",
+			db:              map[string]string{"tinyUrl": "fullUrl"},
+			expectedTinyUrl: "",
+			expectedError:   nil,
+		},
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlInMemoryRepository{db: testCase.db}
-		got, err := repo.CheckIfFullUrlExists(testCase.input)
+		t.Run(testCase.name, func(t *testing.T) {
+			repo := TinyUrlInMemoryRepository{db: testCase.db}
+			got, err := repo.CheckIfFullUrlExists(testCase.input)
 
-		assert.Equal(t, testCase.expectedTinyUrl, got)
-		assert.Equal(t, testCase.expectedError, err)
+			assert.Equal(t, testCase.expectedTinyUrl, got)
+			assert.Equal(t, testCase.expectedError, err)
+		})
 	}
 }

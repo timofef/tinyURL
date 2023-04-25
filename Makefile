@@ -20,3 +20,4 @@ mock:
 test:
 	go test ./... -v -coverpkg=./... -coverprofile=cover.out.tmp && \
 	cat cover.out.tmp | grep -v "mock.go" | grep -v "pb.go" > cover.out && go tool cover -html=cover.out
+
