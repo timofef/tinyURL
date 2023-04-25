@@ -4,8 +4,8 @@ import (
 	"context"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
-	server "github.com/timofef/tinyURL/internal/pkg/tinyURL/delivery/server"
-	"github.com/timofef/tinyURL/internal/tinyURL/logger"
+	"github.com/timofef/tinyURL/internal/delivery/server"
+	"github.com/timofef/tinyURL/internal/logger"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -16,12 +16,17 @@ type IUsecase interface {
 }
 
 type TinyUrlHandler struct {
-	Usecase IUsecase
-	server.UnimplementedTinyUrlServiceServer
+	usecase IUsecase
+	server_proto.UnimplementedTinyUrlServiceServer
 }
 
-func (h *TinyUrlHandler) Add(ctx context.Context, fullUrl *server.FullUrl) (*server.TinyUrl, error) {
-	err := validation.Validate(fullUrl.Val,
+func InitTinyUrlHandler(uc IUsecase) *TinyUrlHandler {
+	return &TinyUrlHandler{usecase: uc}
+}
+
+func (h *TinyUrlHandler) Add(ctx context.Context, fullUrl *server_proto.FullUrl) (*server_proto.TinyUrl, error) {
+	err := validation.Validate(
+		fullUrl.Val,
 		validation.Required,
 		is.URL,
 	)
@@ -29,17 +34,17 @@ func (h *TinyUrlHandler) Add(ctx context.Context, fullUrl *server.FullUrl) (*ser
 		return nil, status.Error(codes.InvalidArgument, "Invalid URL")
 	}
 
-	tinyUrl, err := h.Usecase.Add(fullUrl.Val)
+	tinyUrl, err := h.usecase.Add(fullUrl.Val)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Server error: "+err.Error())
 	}
 
 	logger.MainLogger.Info("Added " + fullUrl.Val + " as " + tinyUrl)
 
-	return &server.TinyUrl{Val: tinyUrl}, nil
+	return &server_proto.TinyUrl{Val: tinyUrl}, nil
 }
 
-func (h *TinyUrlHandler) Get(ctx context.Context, tinyUrl *server.TinyUrl) (*server.FullUrl, error) {
+func (h *TinyUrlHandler) Get(ctx context.Context, tinyUrl *server_proto.TinyUrl) (*server_proto.FullUrl, error) {
 	err := validation.Validate(tinyUrl.Val,
 		validation.Required,
 		is.URL,
@@ -48,7 +53,7 @@ func (h *TinyUrlHandler) Get(ctx context.Context, tinyUrl *server.TinyUrl) (*ser
 		return nil, status.Error(codes.InvalidArgument, "Invalid URL")
 	}
 
-	fullUrl, err := h.Usecase.Get(tinyUrl.Val)
+	fullUrl, err := h.usecase.Get(tinyUrl.Val)
 	if err != nil {
 		return nil, status.Error(codes.Internal, "Server error: "+err.Error())
 	}
@@ -58,5 +63,5 @@ func (h *TinyUrlHandler) Get(ctx context.Context, tinyUrl *server.TinyUrl) (*ser
 
 	logger.MainLogger.Info("Found " + tinyUrl.Val + " as " + fullUrl)
 
-	return &server.FullUrl{Val: fullUrl}, nil
+	return &server_proto.FullUrl{Val: fullUrl}, nil
 }

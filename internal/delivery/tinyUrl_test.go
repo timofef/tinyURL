@@ -5,12 +5,36 @@ import (
 	"errors"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	mock_delivery "github.com/timofef/tinyURL/internal/pkg/tinyURL/delivery/mocks"
-	server "github.com/timofef/tinyURL/internal/pkg/tinyURL/delivery/server"
+	"github.com/timofef/tinyURL/internal/delivery/mocks"
+	server "github.com/timofef/tinyURL/internal/delivery/server"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"testing"
 )
+
+func TestTinyUrlHandler_InitTinyUrlHandler(t *testing.T) {
+	mockCtrl := gomock.NewController(t)
+	type test struct {
+		usecase func() *mock_delivery.MockIUsecase
+	}
+
+	tests := []test{
+		{
+			usecase: func() *mock_delivery.MockIUsecase {
+				uc := mock_delivery.NewMockIUsecase(mockCtrl)
+				return uc
+			},
+		},
+	}
+
+	for _, testCase := range tests {
+		uc := testCase.usecase()
+		got := InitTinyUrlHandler(uc)
+
+		assert.NotNil(t, got)
+		assert.Equal(t, uc, got.usecase)
+	}
+}
 
 func TestTinyUrlHandler_Add(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
@@ -63,11 +87,12 @@ func TestTinyUrlHandler_Add(t *testing.T) {
 
 	for _, testCase := range tests {
 		handler := TinyUrlHandler{
-			Usecase: testCase.usecase(),
+			usecase: testCase.usecase(),
 		}
 		ctx := context.Background()
 
 		got, err := handler.Add(ctx, testCase.fullUrl)
+
 		assert.Equal(t, status.Error(testCase.expectedErrorCode, testCase.expectedError), err)
 		if testCase.expectedTinyUrl != nil {
 			assert.Equal(t, testCase.expectedTinyUrl.Val, got.Val)
@@ -141,11 +166,12 @@ func TestTinyUrlHandler_Get(t *testing.T) {
 
 	for _, testCase := range tests {
 		handler := TinyUrlHandler{
-			Usecase: testCase.usecase(),
+			usecase: testCase.usecase(),
 		}
 		ctx := context.Background()
 
 		got, err := handler.Get(ctx, testCase.tinyUrl)
+
 		assert.Equal(t, status.Error(testCase.expectedErrorCode, testCase.expectedError), err)
 		if testCase.expectedFullUrl != nil {
 			assert.Equal(t, testCase.expectedFullUrl.Val, got.Val)

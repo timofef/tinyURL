@@ -4,18 +4,17 @@ import (
 	"context"
 	"flag"
 	"github.com/sirupsen/logrus"
-	"github.com/timofef/tinyURL/internal/pkg/tinyURL/delivery"
-	server "github.com/timofef/tinyURL/internal/pkg/tinyURL/delivery/server"
-	"github.com/timofef/tinyURL/internal/pkg/tinyURL/repository"
-	"github.com/timofef/tinyURL/internal/pkg/tinyURL/usecase"
-	"github.com/timofef/tinyURL/internal/tinyURL/logger"
-	"github.com/timofef/tinyURL/internal/tinyURL/utils"
+	"github.com/timofef/tinyURL/internal/delivery"
+	server "github.com/timofef/tinyURL/internal/delivery/server"
+	"github.com/timofef/tinyURL/internal/logger"
+	"github.com/timofef/tinyURL/internal/repository"
+	"github.com/timofef/tinyURL/internal/usecase"
+	"github.com/timofef/tinyURL/internal/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"math/rand"
 	"net"
 	"os"
-	"sync"
 	"time"
 )
 
@@ -48,38 +47,27 @@ func main() {
 	// Init repository
 	var tinyUrlRepository usecase.IRepository
 	if *useInMemoryStorage {
-		tinyUrlRepository = &repository.TinyUrlInMemoryRepository{
-			Mux: sync.RWMutex{},
-			DB:  make(map[string]string),
-		}
+		tinyUrlRepository = repository.InitTinyUrlInMemoryRepository()
 		logger.MainLogger.Info("Using in-memory storage")
 	} else {
 		db, err := repository.InitPostgres(os.Getenv("DB"))
 		if err != nil {
 			logger.MainLogger.Fatal("Can't connect to database: " + err.Error())
 		}
-		tinyUrlRepository = &repository.TinyUrlSqlRepository{
-			DB: db,
-		}
+		tinyUrlRepository = repository.InitTinyUrlSqlRepository(db)
 		logger.MainLogger.Info("Using PostgreSQL storage")
 	}
 
-	// Init tinyUrlUsecase
+	// Init usecase
 	baseUrl := "http://default.base.url.com/"
 	if val := os.Getenv("BASE_URL"); val != "" {
 		baseUrl = val
 	}
 	logger.MainLogger.Info("Base URL: " + baseUrl)
-	tinyUrlUsecase := usecase.TinyUrlUsecase{
-		BaseUrl:         baseUrl,
-		Repository:      tinyUrlRepository,
-		GenerateTinyUrl: utils.GenerateString,
-	}
+	tinyUrlUsecase := usecase.InitTinyUrlUsecase(baseUrl, tinyUrlRepository, utils.GenerateString)
 
 	// Init handler
-	tinyUrlHandler := delivery.TinyUrlHandler{
-		Usecase: &tinyUrlUsecase,
-	}
+	tinyUrlHandler := delivery.InitTinyUrlHandler(tinyUrlUsecase)
 
 	// Init server
 	listen, err := net.Listen("tcp", ":5555")
@@ -87,7 +75,7 @@ func main() {
 		logger.MainLogger.Fatal("Failed to listen: " + err.Error())
 	}
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(interceptor))
-	server.RegisterTinyUrlServiceServer(grpcServer, &tinyUrlHandler)
+	server.RegisterTinyUrlServiceServer(grpcServer, tinyUrlHandler)
 
 	// Serve
 	logger.MainLogger.Info("Started server on localhost:5555")

@@ -4,22 +4,27 @@
 
 Ссылка должна быть:
 
->— уникальной; на один оригинальный URL должна ссылаться только одна сокращенная ссылка;
+* уникальной; на один оригинальный URL должна ссылаться только одна сокращенная ссылка;
 
->— длиной 10 символов;
+* длиной 10 символов;
 
->— из символов латинского алфавита в нижнем и верхнем регистре, цифр и символа _ (подчеркивание).
+* из символов латинского алфавита в нижнем и верхнем регистре, цифр и символа _ (подчеркивание).
 
-Сделать работу сервиса через GRPC, то есть составить proto и реализовать сервис с
+
+Сервис должен быть написан на Go и принимать следующие запросы по http:
+1. Метод Post, который будет сохранять оригинальный URL в базе и возвращать сокращённый.
+2. Метод Get, который будет принимать сокращённый URL и возвращать оригинальный.
+
+**Условие со звёздочкой:** cделать работу сервиса через GRPC, то есть составить proto и реализовать сервис с
 двумя соответствующими эндпойнтами.
 
 Решение должно соответствовать условиям:
 
->— сервис распространён в виде Docker-образа;
+* сервис распространён в виде Docker-образа;
 
->— в качестве хранилища ожидаем in-memory решение и PostgreSQL. Какое хранилище использовать, указывается параметром при запуске сервиса;
+* в качестве хранилища ожидаем in-memory решение и PostgreSQL. Какое хранилище использовать, указывается параметром при запуске сервиса;
 
->— реализованный функционал покрыт Unit-тестами.
+* реализованный функционал покрыт Unit-тестами.
 
 ## Запуск приложения
 
@@ -50,7 +55,7 @@ make mock
 ```
 или
 ```
-mockgen -source=internal/pkg/tinyURL/delivery/tinyURL.go -destination=internal/pkg/tinyURL/delivery/mocks/tinyURL_mock.go && mockgen -source=internal/pkg/tinyURL/usecase/tinyURL.go -destination=internal/pkg/tinyURL/usecase/mocks/tinyURL_mock.go
+mockgen -source=internal/delivery/tinyURL.go -destination=internal/delivery/mocks/tinyURL_mock.go && mockgen -source=internal/usecase/tinyURL.go -destination=internal/usecase/mocks/tinyURL_mock.go
 ```
 ### gRPC:
 ```
@@ -58,7 +63,7 @@ make grpc
 ```
 или
 ```
-protoc --go_out=internal/pkg/tinyURL/delivery/server --go_opt=paths=source_relative --go-grpc_out=internal/pkg/tinyUrl/delivery/server --go-grpc_opt=paths=source_relative api/server.proto --proto_path=api
+protoc --go_out=internal/delivery/server --go_opt=paths=source_relative --go-grpc_out=internal/delivery/server --go-grpc_opt=paths=source_relative api/server.proto --proto_path=api
 ```
 ### Миграции:
 ```

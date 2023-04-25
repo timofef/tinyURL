@@ -8,44 +8,48 @@ type IRepository interface {
 }
 
 type TinyUrlUsecase struct {
-	BaseUrl         string
-	Repository      IRepository
-	GenerateTinyUrl func() string
+	baseUrl         string
+	repository      IRepository
+	generateTinyUrl func() string
+}
+
+func InitTinyUrlUsecase(baseUrl string, repository IRepository, urlGenerator func() string) *TinyUrlUsecase {
+	return &TinyUrlUsecase{baseUrl: baseUrl, repository: repository, generateTinyUrl: urlGenerator}
 }
 
 func (u *TinyUrlUsecase) Add(fullUrl string) (string, error) {
 	// Check if full url already exists
-	tinyUrl, err := u.Repository.CheckIfFullUrlExists(fullUrl)
+	tinyUrl, err := u.repository.CheckIfFullUrlExists(fullUrl)
 	if err != nil {
 		return "", err
 	}
 	if tinyUrl != "" {
-		return u.BaseUrl + tinyUrl, nil
+		return u.baseUrl + tinyUrl, nil
 	}
 
 	// If generated tiny url already exists -> generate again
 	var newTinyUrl string
 	for exists := true; exists; {
-		newTinyUrl = u.GenerateTinyUrl()
-		exists, err = u.Repository.CheckIfTinyUrlExists(newTinyUrl)
+		newTinyUrl = u.generateTinyUrl()
+		exists, err = u.repository.CheckIfTinyUrlExists(newTinyUrl)
 		if err != nil {
 			return "", err
 		}
 	}
 
 	// Add generated tiny url to repository
-	err = u.Repository.Add(fullUrl, newTinyUrl)
+	err = u.repository.Add(fullUrl, newTinyUrl)
 	if err != nil {
 		return "", err
 	}
 
-	return u.BaseUrl + newTinyUrl, nil
+	return u.baseUrl + newTinyUrl, nil
 }
 
 func (u *TinyUrlUsecase) Get(tinyUrl string) (string, error) {
 	// Trim base part
-	trimmedTinyUrl := tinyUrl[len(u.BaseUrl):]
-	fullUrl, err := u.Repository.Get(trimmedTinyUrl)
+	trimmedTinyUrl := tinyUrl[len(u.baseUrl):]
+	fullUrl, err := u.repository.Get(trimmedTinyUrl)
 	if err != nil {
 		return "", err
 	}

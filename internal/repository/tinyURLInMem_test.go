@@ -5,6 +5,25 @@ import (
 	"testing"
 )
 
+func TestTinyUrlInMemoryRepository_InitTinyUrlInMemoryRepository(t *testing.T) {
+	type test struct {
+		mapLen int
+	}
+
+	tests := []test{
+		{
+			mapLen: 0,
+		},
+	}
+
+	for _, testCase := range tests {
+		got := InitTinyUrlInMemoryRepository()
+
+		assert.NotNil(t, got)
+		assert.Equal(t, testCase.mapLen, len(got.db))
+	}
+}
+
 func TestTinyUrlInMemoryRepository_Add(t *testing.T) {
 	type test struct {
 		input         []string
@@ -17,11 +36,13 @@ func TestTinyUrlInMemoryRepository_Add(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlInMemoryRepository{DB: make(map[string]string)}
+		repo := TinyUrlInMemoryRepository{db: make(map[string]string)}
 		got := repo.Add(testCase.input[0], testCase.input[1])
+
 		assert.Equal(t, testCase.expectedError, got)
 
-		res := repo.DB[testCase.input[1]]
+		res := repo.db[testCase.input[1]]
+
 		assert.Equal(t, testCase.inserted, res)
 	}
 }
@@ -40,8 +61,9 @@ func TestTinyUrlInMemoryRepository_Get(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlInMemoryRepository{DB: testCase.db}
+		repo := TinyUrlInMemoryRepository{db: testCase.db}
 		got, err := repo.Get(testCase.input)
+
 		assert.Equal(t, testCase.expectedUrl, got)
 		assert.Equal(t, testCase.expectedError, err)
 	}
@@ -61,8 +83,9 @@ func TestTinyUrlInMemoryRepository_CheckIfTinyUrlExists(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlInMemoryRepository{DB: testCase.db}
+		repo := TinyUrlInMemoryRepository{db: testCase.db}
 		got, err := repo.CheckIfTinyUrlExists(testCase.input)
+
 		assert.Equal(t, testCase.expected, got)
 		assert.Equal(t, testCase.expectedError, err)
 	}
@@ -82,8 +105,9 @@ func TestTinyUrlInMemoryRepository_CheckIfFullUrlExists(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlInMemoryRepository{DB: testCase.db}
+		repo := TinyUrlInMemoryRepository{db: testCase.db}
 		got, err := repo.CheckIfFullUrlExists(testCase.input)
+
 		assert.Equal(t, testCase.expectedTinyUrl, got)
 		assert.Equal(t, testCase.expectedError, err)
 	}

@@ -8,6 +8,33 @@ import (
 	"testing"
 )
 
+func TestTinyUrlSqlRepository_InitTinyUrlSqlRepository(t *testing.T) {
+	type test struct {
+		db func() *sql.DB
+	}
+
+	tests := []test{
+		{
+			db: func() *sql.DB {
+				database, _, err := sqlmock.New()
+				if err != nil {
+					t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+				}
+
+				return database
+			},
+		},
+	}
+
+	for _, testCase := range tests {
+		db := testCase.db()
+		got := InitTinyUrlSqlRepository(db)
+
+		assert.NotNil(t, got)
+		assert.Equal(t, db, got.db)
+	}
+}
+
 func TestTinyUrlSqlRepository_Add(t *testing.T) {
 	type test struct {
 		input         []string
@@ -45,8 +72,9 @@ func TestTinyUrlSqlRepository_Add(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlSqlRepository{DB: testCase.db()}
+		repo := TinyUrlSqlRepository{db: testCase.db()}
 		err := repo.Add(testCase.input[0], testCase.input[1])
+
 		assert.Equal(t, testCase.expectedError, err)
 	}
 }
@@ -92,8 +120,9 @@ func TestTinyUrlSqlRepository_Get(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlSqlRepository{DB: testCase.db()}
+		repo := TinyUrlSqlRepository{db: testCase.db()}
 		got, err := repo.Get(testCase.tinyUrl)
+
 		assert.Equal(t, testCase.expectedFullUrl, got)
 		assert.Equal(t, testCase.expectedError, err)
 	}
@@ -155,8 +184,9 @@ func TestTinyUrlSqlRepository_CheckIfTinyUrlExists(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlSqlRepository{DB: testCase.db()}
+		repo := TinyUrlSqlRepository{db: testCase.db()}
 		got, err := repo.CheckIfTinyUrlExists(testCase.tinyUrl)
+
 		assert.Equal(t, testCase.expected, got)
 		assert.Equal(t, testCase.expectedError, err)
 	}
@@ -218,8 +248,9 @@ func TestTinyUrlSqlRepository_CheckIfFullUrlExists(t *testing.T) {
 	}
 
 	for _, testCase := range tests {
-		repo := TinyUrlSqlRepository{DB: testCase.db()}
+		repo := TinyUrlSqlRepository{db: testCase.db()}
 		got, err := repo.CheckIfFullUrlExists(testCase.fullUrl)
+
 		assert.Equal(t, testCase.expected, got)
 		assert.Equal(t, testCase.expectedError, err)
 	}

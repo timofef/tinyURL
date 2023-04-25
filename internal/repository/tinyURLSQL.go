@@ -4,13 +4,12 @@ import (
 	"database/sql"
 	_ "github.com/jackc/pgx"
 	_ "github.com/jackc/pgx/stdlib"
-	"github.com/timofef/tinyURL/internal/tinyURL/logger"
-
+	"github.com/timofef/tinyURL/internal/logger"
 	"time"
 )
 
 type TinyUrlSqlRepository struct {
-	DB *sql.DB
+	db *sql.DB
 }
 
 func InitPostgres(dbUrl string) (*sql.DB, error) {
@@ -35,14 +34,18 @@ func InitPostgres(dbUrl string) (*sql.DB, error) {
 	return db, nil
 }
 
+func InitTinyUrlSqlRepository(db *sql.DB) *TinyUrlSqlRepository {
+	return &TinyUrlSqlRepository{db: db}
+}
+
 func (r *TinyUrlSqlRepository) Add(fullUrl, tinyUrl string) error {
-	_, err := r.DB.Exec(`INSERT INTO urls (fullurl, tinyurl) VALUES ($1, $2)`, fullUrl, tinyUrl)
+	_, err := r.db.Exec(`INSERT INTO urls (fullurl, tinyurl) VALUES ($1, $2)`, fullUrl, tinyUrl)
 
 	return err
 }
 
 func (r *TinyUrlSqlRepository) Get(tinyUrl string) (string, error) {
-	rows, err := r.DB.Query(`SELECT fullurl FROM urls WHERE tinyurl = $1`, tinyUrl)
+	rows, err := r.db.Query(`SELECT fullurl FROM urls WHERE tinyurl = $1`, tinyUrl)
 	if err != nil {
 		return "", err
 	}
@@ -57,7 +60,7 @@ func (r *TinyUrlSqlRepository) Get(tinyUrl string) (string, error) {
 }
 
 func (r *TinyUrlSqlRepository) CheckIfFullUrlExists(fullUrl string) (string, error) {
-	rows, err := r.DB.Query(`SELECT tinyurl FROM urls WHERE fullurl = $1`, fullUrl)
+	rows, err := r.db.Query(`SELECT tinyurl FROM urls WHERE fullurl = $1`, fullUrl)
 	if err != nil {
 		return "", err
 	}
@@ -77,7 +80,7 @@ func (r *TinyUrlSqlRepository) CheckIfFullUrlExists(fullUrl string) (string, err
 }
 
 func (r *TinyUrlSqlRepository) CheckIfTinyUrlExists(tinyUrl string) (bool, error) {
-	rows, err := r.DB.Query(`SELECT fullurl FROM urls WHERE tinyurl = $1`, tinyUrl)
+	rows, err := r.db.Query(`SELECT fullurl FROM urls WHERE tinyurl = $1`, tinyUrl)
 	if err != nil {
 		return false, err
 	}
